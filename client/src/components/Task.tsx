@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { format } from 'date-fns';
 
 import {
 	Card,
@@ -21,12 +20,6 @@ interface TaskProps {
 }
 
 const Task: React.FC<TaskProps> = ({ task }) => {
-	const formattedCreatedAt = format(
-		new Date(task.createdAt),
-		'MMM dd, yyyy HH:mm'
-	);
-	const formattedDueDate = format(new Date(task.dueDate), 'MMM dd, yyyy');
-
 	const handleToggleCompleted = () => {
 		console.log(`Task: ${task.description} marked as completed`);
 	};
@@ -37,8 +30,8 @@ const Task: React.FC<TaskProps> = ({ task }) => {
 				<CardTitle>{task.description}</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<p>Created At: {formattedCreatedAt}</p>
-				<p>Due Date: {formattedDueDate}</p>
+				<p>Created At: {task.createdAt}</p>
+				<p>Due Date: {task.dueDate}</p>
 			</CardContent>
 			<CardFooter>
 				<p>Completed: {task.completed ? 'Yes' : 'No'} </p>

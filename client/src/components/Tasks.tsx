@@ -1,13 +1,5 @@
 import { useEffect, useState, ChangeEvent } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch } from '../state/store';
-import {
-	fetchTasks,
-	selectError,
-	selectLoading,
-	selectTasks,
-} from '../state/tasks/tasksSlice';
-
+import axios from 'axios';
 import {
 	Select,
 	SelectContent,
@@ -15,36 +7,72 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from './ui/select';
-
 import { Input } from './ui/input';
 import { Button } from './ui/button';
-
 import Task from './Task';
 import AddTask from './AddTask';
+import { API_URL } from '../config';
 
 const Tasks = () => {
-	const dispatch = useDispatch<AppDispatch>();
-	const tasks = useSelector(selectTasks);
-	const loading = useSelector(selectLoading);
-	const error = useSelector(selectError);
-
-	const [searchQuery, setSearchQuery] = useState('');
+	const [tasks, setTasks] = useState<any[]>([]);
 	const [filteredTasks, setFilteredTasks] = useState<any[]>([]);
+	const [searchQuery, setSearchQuery] = useState('');
 	const [selectedFilter, setSelectedFilter] = useState<string>('Default');
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState<string | null>(null);
 
 	useEffect(() => {
-		dispatch(fetchTasks());
-	}, [dispatch]);
+		const fetchTasks = async () => {
+			setLoading(true);
+			try {
+				const response = await axios.get(`${API_URL}/api/v1/tasks`);
+				setTasks(response.data.tasks);
+			} catch (err) {
+				setError('Failed to load tasks');
+				console.error('Error fetching tasks:', err);
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		fetchTasks();
+	}, []);
 
 	useEffect(() => {
-		filterTasks(selectedFilter);
-	}, [tasks, selectedFilter]);
+		const applyFiltersAndSearch = () => {
+			let filtered = [...tasks];
+
+			if (searchQuery) {
+				filtered = filtered.filter((task) =>
+					task.description.toLowerCase().includes(searchQuery.toLowerCase())
+				);
+			}
+			switch (selectedFilter) {
+				case 'Completed':
+					filtered = filtered.filter((task) => task.completed);
+					break;
+				case 'Due Today': {
+					const today = new Date().toISOString().split('T')[0];
+					filtered = filtered.filter(
+						(task) => task.dueDate?.split('T')[0] === today
+					);
+					break;
+				}
+				case 'Not Completed':
+					filtered = filtered.filter((task) => !task.completed);
+					break;
+				default:
+					break;
+			}
+
+			setFilteredTasks(filtered);
+		};
+
+		applyFiltersAndSearch();
+	}, [tasks, searchQuery, selectedFilter]);
 
 	const handleSearch = () => {
-		const filtered = tasks.filter((task) =>
-			task.description.toLowerCase().includes(searchQuery.toLowerCase())
-		);
-		setFilteredTasks(filtered);
+		setSearchQuery(searchQuery);
 	};
 
 	const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -53,31 +81,6 @@ const Tasks = () => {
 
 	const handleFilterChange = (value: string) => {
 		setSelectedFilter(value);
-	};
-
-	const filterTasks = (filter: string) => {
-		let filtered: any[] = [];
-
-		switch (filter) {
-			case 'Completed':
-				filtered = tasks.filter((task) => task.completed);
-				break;
-			case 'Due Today': {
-				const today = new Date().toISOString().split('T')[0];
-				filtered = tasks.filter(
-					(task) => task.dueDate?.split('T')[0] === today
-				);
-				break;
-			}
-			case 'Not Completed':
-				filtered = tasks.filter((task) => !task.completed);
-				break;
-			default:
-				filtered = tasks;
-				break;
-		}
-
-		setFilteredTasks(filtered);
 	};
 
 	if (loading) return <p>Loading...</p>;
@@ -137,7 +140,7 @@ const Tasks = () => {
 					</Select>
 				</div>
 				<div>
-					<AddTask />
+					<AddTask setTasks={setTasks} />
 				</div>
 			</div>
 			<div>

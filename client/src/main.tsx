@@ -9,8 +9,6 @@ import {
 	Route,
 } from 'react-router-dom';
 import { Tasks, Calendar, Home } from './components/index';
-import { Provider } from 'react-redux';
-import { store } from './state/store';
 
 const router = createBrowserRouter(
 	createRoutesFromElements(
@@ -35,8 +33,6 @@ const router = createBrowserRouter(
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
 	<React.StrictMode>
-		<Provider store={store}>
-			<RouterProvider router={router} />
-		</Provider>
+		<RouterProvider router={router} />
 	</React.StrictMode>
 );

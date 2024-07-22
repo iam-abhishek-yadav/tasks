@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client/edge';
 import { withAccelerate } from '@prisma/extension-accelerate';
 import { verify } from 'hono/jwt';
 import z from 'zod';
+import { addDays, parseISO } from 'date-fns';
 
 export const taskRouter = new Hono<{
 	Bindings: {
@@ -70,16 +71,19 @@ taskRouter.post('/', async (c) => {
 			});
 		}
 
+		const originalDueDate = parseISO(body.dueDate);
+		const updatedDueDate = addDays(originalDueDate, 1);
+
 		const task = await prisma.task.create({
 			data: {
 				description: data.description,
-				dueDate: data.dueDate,
+				dueDate: updatedDueDate.toISOString(),
 				userId: Number(userId),
 				createdAt: new Date(),
 			},
 		});
 		return c.json({
-			id: task.id,
+			task,
 		});
 	} catch (error) {
 		console.error(error);
