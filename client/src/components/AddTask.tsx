@@ -2,7 +2,6 @@ import * as React from 'react';
 import { format, isBefore, isSameDay } from 'date-fns';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { toZonedTime } from 'date-fns-tz';
-import axios from 'axios';
 import { FaPlus } from 'react-icons/fa';
 
 import { cn } from '../lib/utils';
@@ -21,10 +20,22 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 
 import { API_URL } from '../config';
 
-const AddTask = () => {
+interface Task {
+	description: string;
+	dueDate: string;
+	userId: number;
+}
+
+const AddTask = ({
+	setTasks,
+}: {
+	setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
+}) => {
 	const [description, setDescription] = React.useState('');
 	const [date, setDate] = React.useState<Date | undefined>();
 	const [isOpen, setIsOpen] = React.useState(false);
+	const [loading, setLoading] = React.useState(false);
+	const [error, setError] = React.useState<string | null>(null);
 
 	const handleDateSelect = (selectedDate: Date | undefined) => {
 		if (selectedDate) {
@@ -33,36 +44,49 @@ const AddTask = () => {
 			const istNow = toZonedTime(now, 'Asia/Kolkata');
 			if (!isBefore(istDate, istNow) || isSameDay(istDate, istNow)) {
 				setDate(selectedDate);
+			} else {
+				alert('You cannot select a date before today.');
 			}
 		}
 	};
 
 	const handleAddTask = async () => {
 		if (description && date) {
+			setLoading(true);
+			setError(null);
+
 			try {
-				const response = await axios.post(`${API_URL}/api/v1/tasks`, {
-					description,
-					dueDate: date.toISOString(),
-					userId: 3,
+				const response = await fetch(`${API_URL}/api/v1/tasks`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						description,
+						dueDate: date.toISOString(),
+						userId: 3,
+					}),
 				});
 
-				console.log('Response:', response.data);
-
 				if (response.status === 200) {
-					console.log('Task added successfully!');
+					const newTask = await response.json();
+
+					setTasks((prevTasks) => [...prevTasks, newTask.task]);
+
 					setDescription('');
 					setDate(undefined);
 					setIsOpen(false);
 				} else {
-					console.error('Failed to add task:', response.statusText);
-					alert('Failed to add task. Please try again.');
+					throw new Error('Failed to add task');
 				}
-			} catch (error: any) {
-				console.error('Error adding task:', error.message);
-				alert('Error adding task. Please try again later.');
+			} catch (err: any) {
+				setError('Error adding task. Please try again later.');
+				console.error('Error adding task:', err.message);
+			} finally {
+				setLoading(false);
 			}
 		} else {
-			alert('Please enter a task description and select a date.');
+			alert('Please enter a task description and select a valid date.');
 		}
 	};
 
@@ -115,16 +139,22 @@ const AddTask = () => {
 							<Button
 								type='button'
 								onClick={handleAddTask}
-								className='bg-white text-black'>
+								className='bg-white text-black'
+								disabled={loading}>
 								Add
 							</Button>
 							<Button
 								type='button'
-								onClick={() => setIsOpen(false)}
+								onClick={() => {
+									setDescription('');
+									setDate(undefined);
+									setIsOpen(false);
+								}}
 								className='bg-white text-black'>
 								Cancel
 							</Button>
 						</DialogFooter>
+						{error && <p className='text-red-500'>{error}</p>}
 					</DialogContent>
 				</Dialog>
 			)}
