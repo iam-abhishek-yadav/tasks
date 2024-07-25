@@ -95,3 +95,58 @@ taskRouter.post('/', async (c) => {
 		await prisma.$disconnect();
 	}
 });
+
+taskRouter.put('/toggle/:id', async (c) => {
+	const prisma = new PrismaClient({
+		datasourceUrl: c.env.DATABASE_URL,
+	}).$extends(withAccelerate());
+
+	try {
+		const taskId = Number(c.req.param('id'));
+		const userId = c.get('userId');
+
+		if (!userId) {
+			c.status(401);
+			return c.json({
+				error: 'Unauthorized',
+			});
+		}
+
+		const task = await prisma.task.findUnique({
+			where: { id: taskId },
+		});
+
+		if (!task) {
+			c.status(404);
+			return c.json({
+				error: 'Task not found',
+			});
+		}
+
+		if (task.userId !== Number(userId)) {
+			c.status(403);
+			return c.json({
+				error: 'Forbidden',
+			});
+		}
+
+		const updatedTask = await prisma.task.update({
+			where: { id: taskId },
+			data: {
+				completed: !task.completed,
+			},
+		});
+
+		return c.json({
+			task: updatedTask,
+		});
+	} catch (error) {
+		console.error(error);
+		c.status(500);
+		return c.json({
+			error: 'Internal Server Error',
+		});
+	} finally {
+		await prisma.$disconnect();
+	}
+});

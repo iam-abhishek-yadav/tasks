@@ -1,5 +1,4 @@
 import * as React from 'react';
-
 import {
 	Card,
 	CardContent,
@@ -8,6 +7,7 @@ import {
 	CardTitle,
 } from './ui/card';
 import { Checkbox } from './ui/checkbox';
+import { API_URL } from '../config';
 
 interface TaskProps {
 	task: {
@@ -20,8 +20,30 @@ interface TaskProps {
 }
 
 const Task: React.FC<TaskProps> = ({ task }) => {
-	const handleToggleCompleted = () => {
-		console.log(`Task: ${task.description} marked as completed`);
+	const [completed, setCompleted] = React.useState(task.completed);
+
+	const handleToggleCompleted = async () => {
+		try {
+			const response = await fetch(
+				`${API_URL}/api/v1/tasks/toggle/${task.id}`,
+				{
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({ completed: !completed }),
+				}
+			);
+
+			if (!response.ok) {
+				throw new Error('Failed to toggle task');
+			}
+
+			const updatedTask = await response.json();
+			setCompleted(updatedTask.task.completed);
+		} catch (error) {
+			console.error('Error toggling task:', error);
+		}
 	};
 
 	return (
@@ -34,9 +56,9 @@ const Task: React.FC<TaskProps> = ({ task }) => {
 				<p>Due Date: {task.dueDate}</p>
 			</CardContent>
 			<CardFooter>
-				<p>Completed: {task.completed ? 'Yes' : 'No'} </p>
+				<p>Completed: {completed ? 'Yes' : 'No'} </p>
 				<Checkbox
-					checked={task.completed}
+					checked={completed}
 					className='ml-4'
 					onCheckedChange={handleToggleCompleted}
 				/>
