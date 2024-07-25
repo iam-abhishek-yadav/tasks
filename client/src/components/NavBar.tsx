@@ -23,6 +23,13 @@ const NavBar = () => {
 						Calendar
 					</Link>
 				</NavigationMenuItem>
+				<NavigationMenuItem>
+					<Link
+						to='/issues'
+						className='text-white'>
+						Issues
+					</Link>
+				</NavigationMenuItem>
 			</NavigationMenuList>
 		</NavigationMenu>
 	);

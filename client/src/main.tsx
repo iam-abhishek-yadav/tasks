@@ -8,7 +8,7 @@ import {
 	RouterProvider,
 	Route,
 } from 'react-router-dom';
-import { Tasks, Calendar, Home } from './components/index';
+import { Tasks, Calendar, Home, Issues } from './components/index';
 
 const router = createBrowserRouter(
 	createRoutesFromElements(
@@ -26,6 +26,10 @@ const router = createBrowserRouter(
 			<Route
 				path='/calendar'
 				element={<Calendar />}
+			/>
+			<Route
+				path='/issues'
+				element={<Issues />}
 			/>
 		</Route>
 	)
