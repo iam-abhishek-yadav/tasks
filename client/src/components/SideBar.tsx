@@ -5,27 +5,27 @@ import {
 	NavigationMenuList,
 } from './ui/navigation-menu';
 
-const NavBar = () => {
+const SideBar = () => {
 	return (
 		<NavigationMenu>
 			<NavigationMenuList className='flex flex-col items-start gap-5 border border-white p-3'>
 				<NavigationMenuItem>
 					<Link
-						to='/tasks'
+						to='/home'
 						className='text-white px-1'>
 						Tasks
 					</Link>
 				</NavigationMenuItem>
 				<NavigationMenuItem>
 					<Link
-						to='/calendar'
+						to='/home/calendar'
 						className='text-white'>
 						Calendar
 					</Link>
 				</NavigationMenuItem>
 				<NavigationMenuItem>
 					<Link
-						to='/issues'
+						to='/home/issues'
 						className='text-white'>
 						Issues
 					</Link>
@@ -35,4 +35,4 @@ const NavBar = () => {
 	);
 };
 
-export default NavBar;
+export default SideBar;
