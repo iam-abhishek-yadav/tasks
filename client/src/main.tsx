@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import Layout from './Layout';
 import './index.css';
 import {
 	createBrowserRouter,
@@ -8,30 +7,54 @@ import {
 	RouterProvider,
 	Route,
 } from 'react-router-dom';
-import { Tasks, Calendar, Home, Issues } from './components/index';
+import {
+	Tasks,
+	Calendar,
+	Home,
+	Issues,
+	SignIn,
+	SignUp,
+	LandingPage,
+} from './components/index';
 
 const router = createBrowserRouter(
 	createRoutesFromElements(
-		<Route
-			path='/'
-			element={<Layout />}>
+		<>
+			{/* Root route */}
 			<Route
 				path='/'
-				element={<Home />}
+				element={<LandingPage />}
+			/>
+
+			{/* Authentication Pages */}
+			<Route
+				path='/signup'
+				element={<SignUp />}
 			/>
 			<Route
-				path='/tasks'
-				element={<Tasks />}
+				path='/signin'
+				element={<SignIn />}
 			/>
+
+			{/* Home route as a layout route */}
 			<Route
-				path='/calendar'
-				element={<Calendar />}
-			/>
-			<Route
-				path='/issues'
-				element={<Issues />}
-			/>
-		</Route>
+				path='/home'
+				element={<Home />}>
+				{/* Nested routes */}
+				<Route
+					index
+					element={<Tasks />}
+				/>
+				<Route
+					path='calendar'
+					element={<Calendar />}
+				/>
+				<Route
+					path='issues'
+					element={<Issues />}
+				/>
+			</Route>
+		</>
 	)
 );
 
