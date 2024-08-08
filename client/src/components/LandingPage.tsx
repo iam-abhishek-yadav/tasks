@@ -4,31 +4,47 @@ import { useCookies } from 'react-cookie';
 
 const LandingPage: React.FC = () => {
 	const navigate = useNavigate();
-	const [cookies] = useCookies(['authToken']);
+	const [cookies, , removeCookie] = useCookies(['authToken']);
+
+	const isLoggedIn = cookies.authToken && cookies.authToken.trim() !== '';
 
 	const handleManageTasksClick = () => {
-		const authToken = cookies.authToken as string | undefined;
-		console.log(authToken);
-		if (authToken && authToken.trim() !== '') {
+		if (isLoggedIn) {
 			navigate('/home');
 		} else {
 			navigate('/signin');
 		}
 	};
+
+	const handleLogout = () => {
+		removeCookie('authToken');
+		navigate('/signin');
+	};
+
 	return (
 		<div className='h-screen w-full flex flex-col items-center justify-center bg-gray-300'>
 			{/* Sign Up / Sign In Buttons */}
 			<div className='absolute top-4 right-4 flex space-x-4'>
-				<Link to='/signup'>
-					<button className='bg-blue-800 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-700 transition duration-300'>
-						Sign Up
+				{!isLoggedIn ? (
+					<>
+						<Link to='/signup'>
+							<button className='bg-blue-800 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-700 transition duration-300'>
+								Sign Up
+							</button>
+						</Link>
+						<Link to='/signin'>
+							<button className='bg-green-800 text-white px-6 py-3 rounded-lg shadow-md hover:bg-green-700 transition duration-300'>
+								Sign In
+							</button>
+						</Link>
+					</>
+				) : (
+					<button
+						onClick={handleLogout}
+						className='bg-red-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-red-500 transition duration-300'>
+						Logout
 					</button>
-				</Link>
-				<Link to='/signin'>
-					<button className='bg-green-800 text-white px-6 py-3 rounded-lg shadow-md hover:bg-green-700 transition duration-300'>
-						Sign In
-					</button>
-				</Link>
+				)}
 			</div>
 
 			{/* Tagline */}
