@@ -1,9 +1,10 @@
 import { Hono } from 'hono';
 import { PrismaClient } from '@prisma/client/edge';
 import { withAccelerate } from '@prisma/extension-accelerate';
-import { verify } from 'hono/jwt';
 import z from 'zod';
 import { addDays, parseISO } from 'date-fns';
+import { getCookie } from 'hono/cookie';
+import { verify } from 'hono/jwt';
 
 export const taskRouter = new Hono<{
 	Bindings: {
@@ -22,10 +23,15 @@ const createTaskInput = z.object({
 
 taskRouter.use('/*', async (c, next) => {
 	try {
-		c.set('userId', '3');
+		console.log(c.req);
+		const token = getCookie('authToken');
+		console.log(token);
+
 		await next();
 	} catch (e) {
 		console.error(e);
+		c.status(401);
+		return c.json({ error: 'Unauthorized' });
 	}
 });
 
